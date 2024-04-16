@@ -24,7 +24,7 @@ To get started with Netizens, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/netizens.git
+   git clone https://github.com/pranjal-yadav05/NETIZENS.git
    ```
 2. Set up a local development environment for PHP.
 3. Import the SQL database schema provided in the database.sql file.
