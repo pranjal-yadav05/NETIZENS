@@ -1,4 +1,4 @@
-# Netizens
+# NETIZENS
 <img src='Netizens/logo.png' width='100%'/>
 Netizens is a PHP and AJAX-based web application that allows users to chat online with friends in real-time. Users can create friendships by sending and accepting friend requests, customize their profiles with images and usernames, and engage in quick and seamless conversations.
 Link to Netizens : https://netizens.great-site.net/
