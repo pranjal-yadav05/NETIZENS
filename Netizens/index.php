@@ -6,10 +6,29 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if (isset($_POST['signout'])) {
+    $connection = mysqli_connect("sql213.epizy.com", "epiz_34245275", "jj3pkWgQvydF", "epiz_34245275_netizens");
+    $user_id = $_SESSION['user_id'];
+    $query = "UPDATE users SET status = 'offline' WHERE user_id = ?";
+    
+    // Prepare the statement
+    $stmt = mysqli_prepare($connection, $query);
+    
+    // Bind parameters
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    
+    // Execute the statement
+    mysqli_stmt_execute($stmt);
+    
+    // Close the statement
+    mysqli_stmt_close($stmt);
+
     session_destroy();
+    
     header("Location: signin.php");
+
     exit();
 }
+
 
 if(isset($_POST['friends'])){
     header("Location: friend_request.php");
@@ -25,15 +44,22 @@ if(isset($_POST['setting'])){
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="user.png"/>
     <title>NETIZENS</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Passion+One&display=swap');
+
         body, html {
             height: 100%;
         }
 
         body {
+            /* background-image:url('6346.jpg');
+            background-size:cover; */
+             background: linear-gradient(45deg, #2b6777, #c8d8e4, #ffffff, #f2f2f2, #52ab98);
             font-family: 'Roboto Condensed', sans-serif;
             display: flex;
             margin: 0;
@@ -44,13 +70,43 @@ if(isset($_POST['setting'])){
             padding: 0;
             background-color: #f2f2f2;
         }
+        .logo {
+            width: 35px;
+            height: 35px;
+            border-radius: 17px;
+            background-image: url("user.png");
+            background-size: cover;
+            margin-right: 10px;
+        }
+
+        .heading {
+            font-family: 'Passion One', cursive;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: black;
+            background: linear-gradient(45deg, #2b6777, #c8d8e4);
+            padding: 17px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            font-size: 50px;
+            width:fit-content;
+            /* margin:auto; */
+            width: 70%;
+            max-width: 400px;
+            margin: 25px auto;
+            
+        }
 
         h1 {
             text-align: center;
+            font-size:28px;
+            margin:10px;
             padding: 20px;
             background-color: #2b6777;
             color: #ffffff;
-            width: 100vw;
+            border-radius:12px;
         }
 
         .container {
@@ -94,6 +150,8 @@ if(isset($_POST['setting'])){
 
         .friend-list {
             margin-top: 20px;
+            max-height: 400px;
+            overflow-y: scroll;
         }
 
         .friend-item {
@@ -167,11 +225,14 @@ if(isset($_POST['setting'])){
     .no-requests {
             text-align: center;
     }
-
+        
     </style>
 </head>
 <body>
-    <h1>Netizens Unleashed: Where Chat Knows No Bounds!</h1>
+    <div class="heading">
+            <img class="logo" />
+            NETIZENS
+    </div>
     <div class="container">
         <form method="post">
            <button id="sgnout" name="signout">Sign out</button>
@@ -179,9 +240,13 @@ if(isset($_POST['setting'])){
         // Assuming you have established a database connection
         $conn = mysqli_connect("sql213.epizy.com", "epiz_34245275", "jj3pkWgQvydF", "epiz_34245275_netizens");
         $loggedInUserId=$_SESSION['user_id'];
+       
         // Get the number of friend requests
-        $query = "SELECT COUNT(*) AS request_count FROM friend_requests WHERE receiver_id = $loggedInUserId AND request_status = 'pending'";
-        $requestResult = mysqli_query($conn, $query);
+        $query = "SELECT COUNT(*) AS request_count FROM friend_requests WHERE receiver_id = ? AND request_status = 'pending'";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $loggedInUserId);
+        mysqli_stmt_execute($stmt);
+        $requestResult = mysqli_stmt_get_result($stmt);
 
         if ($requestResult) {
             $requestCount = mysqli_fetch_assoc($requestResult)['request_count'];
@@ -210,8 +275,12 @@ if(isset($_POST['setting'])){
 
             // Retrieve the list of friends from the database
             $loggedInUserId = $_SESSION['user_id']; // Replace with your own code to get the logged-in user's ID
-            $query = "SELECT * FROM friends WHERE user_id_1 = $loggedInUserId OR user_id_2 = $loggedInUserId";
-            $result = mysqli_query($conn, $query);
+            $query = "SELECT * FROM friends WHERE user_id_1 = ? OR user_id_2 = ?";
+            $stmt = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, "ii", $loggedInUserId, $loggedInUserId);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+
 
             
             // Display each friend as a clickable link
@@ -225,7 +294,12 @@ if(isset($_POST['setting'])){
                     if ($friendData = mysqli_fetch_assoc($friendResult)) {
                         $friendUsername = $friendData['username'];
                         $friendProfilePic = $friendData['profile_pic'];
-                        echo "<a class='friend-item' href='room.php?friend_id=$friendId'><img class='profile-pic' src='data:image/jpeg;base64," . base64_encode($friendProfilePic) . "'/><span>$friendUsername</span></a>";
+                        if(!empty($friendProfilePic)){
+                            $imgSrc = 'data:image/jpeg;base64,' . base64_encode($friendProfilePic);
+                        }else{
+                            $imgSrc = 'default.jpg';
+                        }
+                        echo "<a class='friend-item' href='room.php?friend_id=$friendId'><img class='profile-pic' src='{$imgSrc}'/><span>$friendUsername</span></a>";
                     }
                 }
             } else {
@@ -237,10 +311,55 @@ if(isset($_POST['setting'])){
             // Close the database connection
             mysqli_close($conn);
             ?>
-            <div class="add-friend-button">
-                <a href="add_friend.php"><button>Add Friend</button></a>
-            </div>
+
+        </div>
+        <div class="add-friend-button">
+            <a href="add_friend.php"><button>Add Friend</button></a>
         </div>
     </div>
+
+    <script>
+        // Function to send AJAX request to update user status to offline
+    function updateUserOfflineStatus() {
+        $.ajax({
+            url: 'update_user_status.php',
+            method: 'POST',
+            data: { online: false }, // Additional data if needed
+            success: function(response) {
+                // Update successful
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating user status:', error);
+            }
+        });
+    }
+
+    // Call the function when the page unloads
+    $(window).on('unload', function() {
+        updateUserOfflineStatus();
+    });
+
+    // Function to send AJAX request to update user status to online
+    function updateUserOnlineStatus() {
+        $.ajax({
+            url: 'update_user_status.php',
+            method: 'POST',
+            data: { online: true }, // Additional data if needed
+            success: function(response) {
+                // Update successful
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating user status:', error);
+            }
+        });
+    }
+
+    // Call the function when the page loads
+    $(document).ready(function() {
+        updateUserOnlineStatus();
+    });
+    </script>
+
+
 </body>
 </html>

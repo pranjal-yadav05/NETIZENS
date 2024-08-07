@@ -84,21 +84,34 @@ if (isset($_POST['reject'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="icon" type="image/png" href="user.png"/>
     <title>NETIZENS - Friend Requests</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap');
+        body, html {
+            height: 100%;
+        }
         body {
+             background: linear-gradient(45deg, #2b6777, #c8d8e4, #ffffff, #f2f2f2, #52ab98);
             font-family: 'Roboto Condensed', sans-serif;
+            display: flex;
             margin: 0;
+            align-items: center;
+            height: 100%;
+            width: 100vw;
+            flex-direction: column;
             padding: 0;
             background-color: #f2f2f2;
         }
 
         h1 {
-            text-align: center;
+             text-align: center;
+            font-size:28px;
+            margin:10px;
             padding: 20px;
             background-color: #2b6777;
             color: #ffffff;
+            border-radius:12px;
         }
 
         .container {
